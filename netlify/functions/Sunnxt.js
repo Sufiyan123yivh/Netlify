@@ -1,10 +1,11 @@
-// File: api/sunnxt.js
+// File: netlify/functions/sunnxt.js
 
-export default async function handler(req, res) {
+export async function handler(event, context) {
   try {
     const response = await fetch(
       "https://raw.githubusercontent.com/alexandermail371/cricfytv/99be12ab22cb39a6983bd63845fc5c23eb495570/sunxt.m3u"
     );
+
     const text = await response.text();
 
     const updated = text
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
           );
         }
       )
-      .replace(/%7Ccookie=/g, '||cookie=');
+      .replace(/%7Ccookie=/g, "||cookie=");
 
     const customEntry =
       `#EXTINF:-1 movie-type="web" group-title="Join" tvg-logo="usus" , join@Billa_tv\n` +
@@ -26,9 +27,17 @@ export default async function handler(req, res) {
 
     const finalOutput = customEntry + updated;
 
-    res.setHeader("Content-Type", "application/x-mpegURL");
-    res.status(200).send(finalOutput);
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/x-mpegURL",
+      },
+      body: finalOutput,
+    };
   } catch (error) {
-    res.status(500).send("Error: " + error.message);
+    return {
+      statusCode: 500,
+      body: "Error: " + error.message,
+    };
   }
 }
