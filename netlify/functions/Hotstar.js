@@ -1,5 +1,5 @@
 export async function handler(event, context) {
-  const sourceUrl = "https://jo-json.vodep39240327.workers.dev/";
+  const sourceUrl = "https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json/";
 
   try {
     const res = await fetch(sourceUrl);
