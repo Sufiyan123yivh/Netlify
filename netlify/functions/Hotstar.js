@@ -5,20 +5,17 @@ export async function handler(event, context) {
     const res = await fetch(sourceUrl);
     const data = await res.json();
 
-    const items = Array.isArray(data) ? data : [data];
+    // FIX: Convert object with numeric keys to array
+    const items = Object.values(data);
 
     const m3u = items.map(item => {
-      const kid = item.kid || "";
-      const key = item.key || "";
-      const streamUrl = item.url || "";
-
       return `
-#EXTINF:-1 tvg-id="1373" group-title="Jiostar" tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Disney_Channel.png",Disney Channel
+#EXTINF:-1 tvg-id="" group-title="" tvg-logo="",Channel
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=https://your-license-server.example/api/?kid=${kid}&key=${key}
+#KODIPROP:inputstream.adaptive.license_key=https://your-license-server.example/api/?kid=${item.kid}&key=${item.key}
 #EXTVLCOPT:http-user-agent=Mozilla/5.0
 #EXTHTTP:{"cookie":"your_cookie_here"}
-${streamUrl}
+${item.url}
 `;
     }).join("\n");
 
