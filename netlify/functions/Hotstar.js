@@ -12,7 +12,7 @@ export async function handler(event, context) {
       return `
 #EXTINF:-1 tvg-id="" group-title="" tvg-logo="",Channel
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=https://your-license-server.example/api/?kid=${item.kid}&key=${item.key}
+#KODIPROP:inputstream.adaptive.license_key=https://vercel-php-clearkey-hex-base64-json.vercel.app/api/results.php?kid=${item.kid}&key=${item.key}
 #EXTVLCOPT:http-user-agent=Mozilla/5.0
 #EXTHTTP:{"cookie":"your_cookie_here"}
 ${item.url}
