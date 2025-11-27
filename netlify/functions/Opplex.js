@@ -23,7 +23,7 @@ export async function handler(event, context) {
       };
     }
 
-    const targetUrl = `http://opplex.rw:8080/live/7070/0707/${id}.m3u8`;
+    const targetUrl = `http://opplex.rw:8080/live/Khalilwt4994/66429242/${id}.m3u8`;
     const agent = targetUrl.startsWith("https")
       ? new https.Agent({ keepAlive: true })
       : new http.Agent({ keepAlive: true });
