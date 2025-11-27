@@ -1,52 +1,79 @@
 import http from "http";
 import https from "https";
 
-export default async function handler(req, res) {
+export async function handler(event, context) {
   try {
-    if (req.method === "OPTIONS") {
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-      res.status(204).end();
-      return;
+    // CORS preflight
+    if (event.httpMethod === "OPTIONS") {
+      return {
+        statusCode: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      };
     }
 
-    const { id } = req.query;
+    const id = event.queryStringParameters?.id;
     if (!id) {
-      res.status(400).json({ error: "Missing 'id' query parameter." });
-      return;
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing 'id' query parameter." }),
+      };
     }
 
     const targetUrl = `http://opplex.rw:8080/live/7070/0707/${id}.m3u8`;
-    const agent = targetUrl.startsWith("https") ? new https.Agent({ keepAlive: true }) : new http.Agent({ keepAlive: true });
+    const agent = targetUrl.startsWith("https")
+      ? new https.Agent({ keepAlive: true })
+      : new http.Agent({ keepAlive: true });
 
-    const initialResponse = await fetch(targetUrl, { redirect: "follow", agent });
+    const initialResponse = await fetch(targetUrl, {
+      redirect: "follow",
+      agent,
+    });
+
     if (!initialResponse.ok) {
-      res.status(initialResponse.status).json({ error: "Failed to fetch data from the upstream server." });
-      return;
+      return {
+        statusCode: initialResponse.status,
+        body: JSON.stringify({
+          error: "Failed to fetch data from the upstream server.",
+        }),
+      };
     }
 
     const finalUrl = initialResponse.url;
     const domain = new URL(finalUrl).origin;
     const data = await initialResponse.text();
 
+    // Rewrite playlist URLs
     const modifiedData = data
       .split("\n")
-      .map(line => {
-        if ((line.includes("/hls/") || line.endsWith(".ts")) && !line.startsWith("http")) {
+      .map((line) => {
+        if (
+          (line.includes("/hls/") || line.endsWith(".ts")) &&
+          !line.startsWith("http")
+        ) {
           return `${domain}${line}`;
         }
         return line;
       })
       .join("\n");
 
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
-    res.setHeader("Cache-Control", "public, max-age=10");
-    res.status(200).send(modifiedData);
-
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "public, max-age=10",
+      },
+      body: modifiedData,
+    };
   } catch (error) {
     console.error("Error in M3U8 handler:", error);
-    res.status(500).json({ error: "Internal server error." });
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal server error." }),
+    };
   }
 }
