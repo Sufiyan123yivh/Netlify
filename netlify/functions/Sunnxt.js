@@ -8,14 +8,16 @@ export async function handler(event, context) {
 
     const text = await response.text();
 
+    // FIXED REGEX — matches both:
+    // #KODIPROP:inputstream.adaptive.license_key=
+    // KODIPROP:inputstream.adaptive.license_key=
     const updated = text
       .replace(
-        /#KODIPROP:inputstream\.adaptive\.license_key=(.*?):(.*?)\n/g,
+        /#?KODIPROP:inputstream\.adaptive\.license_key=([^:]+):([^\n]+)/g,
         (match, keyid, key) => {
           return (
             `#KODIPROP:inputstream.adaptive.license_type=clearkey\n` +
-            `#KODIPROP:inputstream.adaptive.license_type=clearkey\n` +
-            `#KODIPROP:inputstream.adaptive.license_key=https://vercel-php-clearkey-hex-base64-json.vercel.app/api/results.php?keyid=${keyid}&key=${key}\n`
+            `#KODIPROP:inputstream.adaptive.license_key=https://vercel-php-clearkey-hex-base64-json.vercel.app/api/results.php?keyid=${keyid}&key=${key}`
           );
         }
       )
