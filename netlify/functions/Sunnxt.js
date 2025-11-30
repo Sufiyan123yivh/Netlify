@@ -3,7 +3,7 @@
 export async function handler(event, context) {
   try {
     const response = await fetch(
-      "https://raw.githubusercontent.com/amarjitj133/net-TV/011fbb27b657036151632b53458730abef1c474a/Sun-Nxt.m3u"
+      "https://raw.githubusercontent.com/amtoresize/TV/dbd399850e2d6600357483d7371d9edd2137e634/Playlist/SunNxt.m3u"
     );
 
     const text = await response.text();
